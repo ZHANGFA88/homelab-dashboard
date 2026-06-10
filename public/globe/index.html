@@ -1,0 +1,436 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>网络访问 3D 地球 - HomeLab</title>
+  <style>
+    :root{--bg:#020617;--panel:rgba(8,18,35,.78);--line:rgba(99,179,237,.28);--text:#e7f0ff;--muted:#8aa0bd;--cyan:#22d3ee;--green:#10b981;--yellow:#f59e0b;--red:#ef4444;--purple:#a855f7}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at 18% 12%,rgba(34,211,238,.18),transparent 26%),radial-gradient(circle at 82% 4%,rgba(168,85,247,.16),transparent 30%),var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",Arial,sans-serif;overflow:hidden}
+    #globe{position:fixed;inset:0}.hud{position:fixed;inset:22px;display:grid;grid-template-columns:360px 1fr 410px;grid-template-rows:76px 1fr 118px;gap:18px;pointer-events:none}.card{background:rgba(15,23,42,0.7)!important;backdrop-filter:blur(12px);border:1px solid rgba(0,212,255,0.15);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-radius:8px;padding:16px;pointer-events:auto}.top{grid-column:1/4;display:flex;align-items:center;justify-content:space-between;padding:0 24px}.topLeft{display:flex;align-items:baseline;gap:16px}.title{font-size:32px;font-weight:820;letter-spacing:1px;text-shadow:0 0 26px rgba(34,211,238,.22)}.title:before{content:"◆";color:var(--cyan);margin-right:14px;font-size:30px;vertical-align:4px;text-shadow:0 0 18px var(--cyan)}.sub{color:var(--muted);font-size:14px}.topActions{display:flex;align-items:center;gap:10px}.topBtn{color:var(--cyan);text-decoration:none;border:1px solid rgba(34,211,238,.35);border-radius:10px;padding:9px 12px;background:rgba(15,23,42,.38);font-size:14px;cursor:pointer}.topBtn:hover{background:rgba(34,211,238,.12)}.topBtn.primary{background:rgba(34,211,238,.16);box-shadow:0 0 20px rgba(34,211,238,.16)}.back{color:var(--cyan);text-decoration:none}.left{grid-column:1;grid-row:2;padding:22px}.right{grid-column:3;grid-row:2;padding:22px;overflow:hidden;display:flex;flex-direction:column}.unifi-overview{grid-column:1;grid-row:2;display:grid;grid-template-rows:auto auto;gap:14px;overflow:hidden;background:transparent!important;border:0!important;box-shadow:none!important;backdrop-filter:none!important;padding:0!important}.unifi-card{background:rgba(15,23,42,0.7);backdrop-filter:blur(12px);border:1px solid rgba(0,212,255,0.15);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-radius:8px;padding:16px;overflow:hidden}.unifi-card h3{margin:0 0 14px;font-size:20px}.unifi-card h4{margin:0 0 12px;font-size:18px}.unifiGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px 12px}.uItem{min-width:0}.uItem .label{font-size:12px;color:var(--muted);margin-bottom:3px}.uItem .value{font-size:15px;color:#d8e5f7;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.trafficMain{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}.trafficBox{border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:10px;background:rgba(255,255,255,.03)}.trafficBox .label{font-size:12px;color:var(--muted)}.trafficBox .value{font-size:21px;font-weight:800;margin-top:4px}.mt-4{margin-top:18px!important}.text-success{color:#10B981}.text-warning{color:#F59E0B}.text-primary{color:#00D4FF}.text-xl{font-size:20px}.font-bold{font-weight:800}.bottom{grid-column:1/4;grid-row:3;display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:stretch;background:rgba(15,23,42,0.7)!important;backdrop-filter:blur(12px);border:1px solid rgba(0,212,255,0.15);box-shadow:0 8px 32px rgba(0,0,0,0.3);border-radius:8px;padding:16px}.metricsGroup{display:grid;grid-template-columns:repeat(4,1fr);align-items:center}.metricDivider{width:1px;background:linear-gradient(180deg,transparent,rgba(0,212,255,.42),transparent);margin:0 2px}.kpi{position:relative;padding:8px 14px;background:transparent;border:0;border-radius:0}.kpi:not(:last-child):after{content:"";position:absolute;right:0;top:18%;bottom:18%;width:1px;background:rgba(148,163,184,.28)}.kpi .n{font-size:12px;color:var(--muted);white-space:nowrap}.kpi .v{font-size:20px;font-weight:800;margin-top:5px;white-space:nowrap}.cyan{color:var(--cyan)}.green{color:var(--green)}.yellow{color:var(--yellow)}.purple{color:var(--purple)}.red{color:var(--red)}
+    h2{margin:0 0 12px;font-size:22px}.filterBar{display:flex;gap:8px;margin:0 0 10px}.filterBtn{border:1px solid rgba(34,211,238,.24);background:rgba(15,23,42,.34);color:#cfe7ff;border-radius:999px;padding:6px 9px;font-size:12px;cursor:pointer}.filterBtn.active{background:rgba(34,211,238,.18);border-color:rgba(34,211,238,.62);box-shadow:0 0 18px rgba(34,211,238,.14)}#events{overflow:auto;min-height:0;scroll-behavior:smooth}.hint{color:var(--muted);line-height:1.55;font-size:14px}.event{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08)}.event b{font-size:16px}.event .meta{font-size:13px;color:var(--muted);margin-top:5px}.pill{align-self:start;border-radius:999px;padding:5px 9px;font-size:12px;background:rgba(34,211,238,.13);color:var(--cyan);border:1px solid rgba(34,211,238,.22)}.selected{margin-top:16px;border-radius:18px;padding:15px;background:rgba(34,211,238,.08);border:1px solid rgba(34,211,238,.18)}.kv{display:flex;justify-content:space-between;gap:10px;padding:7px 0;color:#d8e5f7;border-bottom:1px dashed rgba(255,255,255,.08)}.kv span:first-child{color:var(--muted)}.legend{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);padding:12px 16px;border-radius:16px;background:rgba(2,6,23,.58);border:1px solid rgba(34,211,238,.25);color:#c8f7ff;pointer-events:none}.arcTooltip{position:fixed;z-index:20;min-width:270px;max-width:390px;padding:12px 14px;border-radius:14px;background:rgba(2,8,20,.88);border:1px solid rgba(34,211,238,.42);box-shadow:0 16px 42px rgba(0,0,0,.42),0 0 26px rgba(34,211,238,.18);backdrop-filter:blur(12px);pointer-events:none;color:#e8f7ff;font-size:13px;line-height:1.55}.arcTooltip b{font-size:15px;color:#fff}.arcTooltip .muted{color:var(--muted)}.settingsOverlay{position:fixed;inset:0;z-index:50;background:rgba(0,5,16,.62);backdrop-filter:blur(8px);display:none;align-items:center;justify-content:center;pointer-events:auto}.settingsPanel{width:min(980px,92vw);max-height:86vh;overflow:auto;background:rgba(15,23,42,.92);border:1px solid rgba(0,212,255,.22);box-shadow:0 24px 80px rgba(0,0,0,.55);border-radius:14px;padding:20px}.settingsHead{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.settingsHead h2{margin:0}.settingsClose{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#dbeafe;border-radius:10px;padding:8px 12px;cursor:pointer}.settingsGrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.settingsSection{border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:14px;background:rgba(255,255,255,.035)}.settingsSection h3{margin:0 0 10px;font-size:17px}.settingsRow{display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px dashed rgba(255,255,255,.08);padding:8px 0;color:#d8e5f7}.settingsRow:last-child{border-bottom:0}.settingsLabel{color:var(--muted);font-size:13px}.settingsValue{font-weight:700;text-align:right}.settingsActions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.settingsAction{border:1px solid rgba(34,211,238,.28);background:rgba(34,211,238,.08);color:#c8f7ff;border-radius:10px;padding:8px 10px;cursor:pointer}.settingsAction.active{background:rgba(16,185,129,.16);border-color:rgba(16,185,129,.42);color:#a7f3d0}.settingsInput{width:100%;background:rgba(2,8,20,.58);border:1px solid rgba(255,255,255,.12);border-radius:8px;color:#e8f7ff;padding:8px}.advancedPanel{display:none;margin-top:14px}.advancedGrid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.field label{display:block;font-size:12px;color:var(--muted);margin-bottom:5px}.settingsNote{margin-top:12px;color:var(--muted);font-size:12px;line-height:1.5}.small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body class="pageEntering">
+<div id="globe"></div>
+<div class="legend" id="loading">加载 3D 地球中...</div>
+<div class="arcTooltip" id="arcTooltip" style="display:none"></div>
+<div class="hud">
+  <div class="card top"><div class="topLeft"><span class="title">HomeLab 全球网络监控中心</span><span class="sub" id="source">最后更新：--秒前</span></div><div class="topActions"><a class="topBtn primary pageLink back" href="../index.html">← 主面板</a><button class="topBtn" id="refreshBtn">🔄 刷新数据</button><button class="topBtn" id="settingsBtn">⚙️ 设置</button><button class="topBtn" id="shotBtn">📷 截图</button></div></div>
+  <div class="card unifi-overview">
+    <div class="unifi-card unifi-device-card">
+      <h3>UniFi 设备状态</h3>
+      <div class="unifiGrid">
+        <div class="uItem"><div class="label">网关</div><div class="value" id="uGateway">加载中</div></div>
+        <div class="uItem"><div class="label">WAN IP</div><div class="value" id="uWanIp">-</div></div>
+        <div class="uItem"><div class="label">运营商</div><div class="value" id="uIsp">-</div></div>
+        <div class="uItem"><div class="label">AP 在线</div><div class="value" id="uAp">-/-</div></div>
+        <div class="uItem"><div class="label">交换机</div><div class="value" id="uSwitch">-/-</div></div>
+        <div class="uItem"><div class="label">客户端</div><div class="value" id="uClients">-</div></div>
+        <div class="uItem"><div class="label">弱信号</div><div class="value" id="uWeak">-</div></div>
+        <div class="uItem"><div class="label">最强信号</div><div class="value" id="uStrongest">-</div></div>
+        <div class="uItem"><div class="label">CPU</div><div class="value" id="uCpu">-</div></div>
+        <div class="uItem"><div class="label">内存</div><div class="value" id="uMem">-</div></div>
+      </div>
+    </div>
+    <div class="unifi-card unifi-traffic-card">
+      <h4>当前采样速率</h4>
+      <div class="trafficMain">
+        <div class="trafficBox"><div class="label">⬆️ 上行</div><div class="value text-primary" id="uTx">-</div></div>
+        <div class="trafficBox"><div class="label">⬇️ 下行</div><div class="value text-primary" id="uRx">-</div></div>
+      </div>
+      <div class="unifiGrid">
+        <div class="uItem"><div class="label">WLAN 客户端</div><div class="value" id="uWlanClients">-</div></div>
+        <div class="uItem"><div class="label">WAN 状态</div><div class="value" id="uWanStatus">-</div></div>
+        <div class="uItem"><div class="label">今日已用</div><div class="value" id="uToday">-</div></div>
+        <div class="uItem"><div class="label">控制器版本</div><div class="value" id="uVersion">-</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="card right"><h2>实时访问记录</h2><div class="filterBar"><button class="filterBtn active" data-filter="abnormal">🔴 异常请求</button><button class="filterBtn" data-filter="domestic">🟢 国内请求</button><button class="filterBtn" data-filter="foreign">🔵 国外请求</button></div><div id="events"></div></div>
+  <div class="card bottom">
+    <div class="metricsGroup surgeMetrics">
+      <div class="kpi"><div class="n">访问事件</div><div class="v cyan" id="kEvents">-</div></div>
+      <div class="kpi"><div class="n">访问国家</div><div class="v green" id="kCountries">-</div></div>
+      <div class="kpi"><div class="n">平均延迟</div><div class="v" id="kLatency">-</div></div>
+      <div class="kpi"><div class="n">代理/CDN</div><div class="v purple" id="kProxy">-</div></div>
+    </div>
+    <div class="metricDivider"></div>
+    <div class="metricsGroup unifiMetrics">
+      <div class="kpi"><div class="n">在线设备</div><div class="v green" id="kUniFiDevices">4</div></div>
+      <div class="kpi"><div class="n">在线客户端</div><div class="v green" id="kUniFiClients">27</div></div>
+      <div class="kpi"><div class="n">WAN延迟</div><div class="v" id="kWanLatency">18ms</div></div>
+      <div class="kpi"><div class="n">丢包率</div><div class="v" id="kPacketLoss">0%</div></div>
+    </div>
+  </div>
+</div>
+<div class="settingsOverlay" id="settingsOverlay">
+  <div class="settingsPanel">
+    <div class="settingsHead"><h2>⚙️ 大屏设置</h2><button class="settingsClose" id="settingsClose">关闭</button></div>
+    <div class="settingsGrid">
+      <div class="settingsSection">
+        <h3>刷新与数据源</h3>
+        <div class="settingsRow"><span class="settingsLabel">页面刷新</span><span class="settingsValue" id="sPageRefresh">5秒</span></div>
+        <div class="settingsRow"><span class="settingsLabel">后端采集</span><span class="settingsValue" id="sBackendRefresh">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">Surge</span><span class="settingsValue" id="sSurge">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">UniFi</span><span class="settingsValue" id="sUniFi">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">最后更新</span><span class="settingsValue" id="sLastUpdate">-</span></div>
+        <div class="settingsActions"><button class="settingsAction" id="sRefreshNow">立即刷新</button><button class="settingsAction active" id="sPauseRefresh">自动刷新：开</button></div>
+      </div>
+      <div class="settingsSection">
+        <h3>显示设置</h3>
+        <div class="settingsRow"><span class="settingsLabel">访问记录数量</span><span class="settingsValue">20条</span></div>
+        <div class="settingsRow"><span class="settingsLabel">默认筛选</span><span class="settingsValue">异常请求</span></div>
+        <div class="settingsActions"><button class="settingsAction active" id="sToggleArcs">飞线：开</button><button class="settingsAction active" id="sTogglePoints">点位：开</button><button class="settingsAction active" id="sToggleAtmosphere">大气层：开</button></div>
+        <div class="settingsNote">显示设置只影响当前页面，不写入配置文件。</div>
+      </div>
+      <div class="settingsSection">
+        <h3>UniFi / Surge 状态</h3>
+        <div class="settingsRow"><span class="settingsLabel">UniFi 控制器</span><span class="settingsValue" id="sUniFiBase">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">Site</span><span class="settingsValue" id="sUniFiSite">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">网关</span><span class="settingsValue" id="sGateway">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">控制器版本</span><span class="settingsValue" id="sControllerVer">-</span></div>
+        <div class="settingsRow"><span class="settingsLabel">Surge Base</span><span class="settingsValue" id="sSurgeBase">-</span></div>
+      </div>
+      <div class="settingsSection">
+        <h3>告警阈值</h3>
+        <div class="settingsRow"><span class="settingsLabel">平均延迟黄色</span><span class="settingsValue">&gt;100ms</span></div>
+        <div class="settingsRow"><span class="settingsLabel">平均延迟红色</span><span class="settingsValue">&gt;200ms</span></div>
+        <div class="settingsRow"><span class="settingsLabel">丢包率红色</span><span class="settingsValue">&gt;0%</span></div>
+        <div class="settingsRow"><span class="settingsLabel">弱信号阈值</span><span class="settingsValue">≤ -67dBm</span></div>
+        <div class="settingsRow"><span class="settingsLabel">磁盘告警</span><span class="settingsValue" id="sDiskWarn">-</span></div>
+      </div>
+    </div>
+    <div class="settingsSection" style="margin-top:14px">
+      <h3>高级设置</h3>
+      <div id="advancedLogin">
+        <div class="settingsRow"><span class="settingsLabel">进入高级设置</span><input class="settingsInput" id="advancedPassword" type="password" placeholder="输入管理密码" style="max-width:260px"></div>
+        <div class="settingsActions"><button class="settingsAction" id="advancedLoginBtn">解锁高级设置</button></div>
+      </div>
+      <div class="advancedPanel" id="advancedPanel">
+        <div class="advancedGrid">
+          <div class="field"><label>后端采集间隔 refreshSeconds</label><input class="settingsInput" id="advRefreshSeconds" type="number" min="5"></div>
+          <div class="field"><label>HTTP 超时 httpTimeoutSec</label><input class="settingsInput" id="advHttpTimeout" type="number" min="1"></div>
+          <div class="field"><label>Surge 启用</label><select class="settingsInput" id="advSurgeEnabled"><option value="true">启用</option><option value="false">禁用</option></select></div>
+          <div class="field"><label>Surge Base URL</label><input class="settingsInput" id="advSurgeBase"></div>
+          <div class="field"><label>Surge 最大事件数</label><input class="settingsInput" id="advSurgeMaxEvents" type="number" min="10"></div>
+          <div class="field"><label>UniFi 启用</label><select class="settingsInput" id="advUbntEnabled"><option value="true">启用</option><option value="false">禁用</option></select></div>
+          <div class="field"><label>UniFi Base URL</label><input class="settingsInput" id="advUbntBase"></div>
+          <div class="field"><label>UniFi Site</label><input class="settingsInput" id="advUbntSite"></div>
+          <div class="field"><label>磁盘警告 GB</label><input class="settingsInput" id="advDiskWarn" type="number" min="1"></div>
+          <div class="field"><label>磁盘严重 GB</label><input class="settingsInput" id="advDiskCritical" type="number" min="1"></div>
+        </div>
+        <div class="settingsActions"><button class="settingsAction" id="advancedSaveBtn">保存高级设置</button><button class="settingsAction" id="advancedReloadBtn">重新读取配置</button></div>
+        <div class="settingsNote" id="advancedMsg">只允许修改安全白名单字段；密码和 Token 不在前端显示。</div>
+      </div>
+    </div>
+    <div class="settingsNote">安全策略：不展示 UniFi 密码、Surge Token；普通设置只影响当前页面，高级设置需密码并由本地后端写入白名单配置。</div>
+  </div>
+</div>
+<script src="https://unpkg.com/three@0.150.1/build/three.min.js"></script>
+<script src="https://unpkg.com/globe.gl@2.29.0/dist/globe.gl.min.js"></script>
+<script>
+const dataUrl='../../data/network_events.json';
+const statusUrl='../../data/status.json';
+const earthImageUrl='//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
+const bumpImageUrl='//unpkg.com/three-globe/example/img/earth-topology.png';
+const textureLoader = new THREE.TextureLoader();
+const earthTexture = textureLoader.load(earthImageUrl);
+const bumpTexture = textureLoader.load(bumpImageUrl);
+const earthMaterial = new THREE.MeshPhongMaterial({
+  map: earthTexture,
+  bumpMap: bumpTexture, // 使用你已有的地形凹凸贴图
+  bumpScale: 0.05,
+  specular: new THREE.Color(0x333333),
+  shininess: 5,
+  emissive: new THREE.Color(0x001122), // 微弱自发光
+  emissiveIntensity: 0.2
+});
+function smoothGo(url){document.body.classList.remove('pageEntering');document.body.classList.add('pageLeaving');setTimeout(()=>{location.href=url},280)}
+let globe, payload, idx=0;
+let lastUpdatedAt=null;
+let autoRefreshEnabled=true;
+let showArcs=true, showPoints=true, showAtmosphere=true;
+let adminToken=null;
+let lastStatus=null, lastConfig=null;
+let activeFilter='abnormal';
+function secondsAgoText(ts){
+  if(!ts) return '--秒前';
+  const diff=Math.max(0, Math.floor((Date.now()-new Date(ts).getTime())/1000));
+  return diff+'秒前';
+}
+function updateRelativeTime(){document.getElementById('source').textContent='最后更新：'+secondsAgoText(lastUpdatedAt)}
+function protocolIcon(e){const p=String(e.protocol||'').toUpperCase(); if(p==='HTTPS') return '🔒'; if(p==='GET') return '📥'; if(p==='HEAD') return '📤'; return '🌐'}
+function isDomestic(e){return /China|中国|CN/i.test(`${e.country||''} ${e.countryCode||''}`)}
+function isAbnormal(e){return Number(e.latency_ms)>200 || /timeout|fail|error/i.test(`${e.status||''} ${e.error||''}`)}
+function filteredEvents(events){
+  if(activeFilter==='abnormal') return events.filter(isAbnormal);
+  if(activeFilter==='domestic') return events.filter(isDomestic);
+  if(activeFilter==='foreign') return events.filter(e=>!isDomestic(e));
+  return events;
+}
+function fmtRate(v){
+  // UniFi rx_bytes-r / tx_bytes-r 为 bytes/s，这里换算为网络常用 Mbps
+  const bytesPerSec=Number(v)||0;
+  const mbps=bytesPerSec*8/1000000;
+  if(mbps>=1) return mbps.toFixed(2)+' Mbps';
+  const kbps=bytesPerSec*8/1000;
+  return Math.max(0, kbps).toFixed(0)+' Kbps';
+}
+function setText(id, html){const el=document.getElementById(id); if(el) el.innerHTML=html}
+function onlineCount(list, type){return (list||[]).filter(d=>(!type||d.type===type) && (d.connected===true || d.state===1)).length}
+function totalCount(list, type){return (list||[]).filter(d=>!type||d.type===type).length}
+function updateUniFi(ubnt){
+  if(!ubnt){return}
+  const devices=ubnt.devices||[], clients=ubnt.clients||[], counts=ubnt.counts||{}, wan=ubnt.wan||{}, wlan=ubnt.wlan||{}, controller=ubnt.controller||{};
+  const gatewayName=wan.gatewayName || controller.name || 'UniFi Gateway';
+  const gatewayOnline=ubnt.ok && (wan.status==='ok' || devices.some(d=>['udm','ugw'].includes(d.type)&&d.connected));
+  const apOnline=onlineCount(devices,'uap') || Number(wlan.aps)||0;
+  const apTotal=totalCount(devices,'uap') || Number(counts.aps)||apOnline;
+  const swOnline=onlineCount(devices,'usw');
+  const swTotal=totalCount(devices,'usw') || Number(counts.switches)||swOnline;
+  const clientTotal=Number(counts.clients)||clients.length||Number(wlan.clients)||0;
+  const wireless=clients.filter(c=>c.wired===false && Number.isFinite(Number(c.signal)));
+  const strongest=wireless.length ? Math.max(...wireless.map(c=>Number(c.signal))) : null;
+  const weak=wireless.filter(c=>Number(c.signal)<=-67).length;
+  const rx=(Number(wan.rxRate)||0)+(Number(wlan.rxRate)||0);
+  const tx=(Number(wan.txRate)||0)+(Number(wlan.txRate)||0);
+  const todayGb=ubnt.dailyTrafficGb ?? ubnt.todayGb ?? null;
+  setText('uGateway', `<span class="${gatewayOnline?'text-success':'text-warning'}">${gatewayOnline?'✅':'⚠️'}</span> ${gatewayName}`);
+  setText('uWanIp', wan.ip || '-');
+  setText('uIsp', wan.isp || '-');
+  setText('uAp', `<span class="${apOnline===apTotal?'text-success':'text-warning'}">${apOnline===apTotal?'✅':'⚠️'}</span> ${apOnline}/${apTotal}`);
+  setText('uSwitch', `<span class="${swOnline===swTotal?'text-success':'text-warning'}">${swOnline===swTotal?'✅':'⚠️'}</span> ${swOnline}/${swTotal}`);
+  setText('uClients', `<span class="text-success">✅</span> ${clientTotal}`);
+  setText('uStrongest', strongest==null?'-':strongest+'dBm');
+  setText('uWeak', `<span class="${weak>0?'text-warning':'text-success'}">${weak>0?'⚠️':'✅'}</span> ${weak}`);
+  setText('uCpu', wan.cpu!=null ? wan.cpu+'%' : '-');
+  setText('uMem', wan.mem!=null ? wan.mem+'%' : '-');
+  setText('uTx', fmtRate(tx));
+  setText('uRx', fmtRate(rx));
+  setText('uWlanClients', Number(wlan.clients)||clientTotal||'-');
+  setText('uWanStatus', `<span class="${wan.status==='ok'?'text-success':'text-warning'}">${wan.status==='ok'?'✅':'⚠️'}</span> ${wan.status||'-'}`);
+  setText('uToday', todayGb==null?'-':Number(todayGb).toFixed(1)+' GB');
+  setText('uVersion', controller.version || wan.gatewayVersion || '-');
+  const devEl=document.getElementById('kUniFiDevices'); if(devEl) devEl.textContent=(Number(counts.devices)||devices.length||0);
+  const cliEl=document.getElementById('kUniFiClients'); if(cliEl) cliEl.textContent=clientTotal;
+  const wanLatency=Number(ubnt.wanLatencyMs ?? ubnt.latency_ms ?? 0);
+  const packetLoss=Number(ubnt.packetLoss ?? ubnt.packetLossPct ?? 0);
+  const wanEl=document.getElementById('kWanLatency'); if(wanEl){wanEl.textContent=wanLatency?wanLatency+'ms':'-'; wanEl.className='v '+(wanLatency>200?'red':wanLatency>100?'yellow':'green')}
+  const lossEl=document.getElementById('kPacketLoss'); if(lossEl){lossEl.textContent=packetLoss+'%'; lossEl.className='v '+(packetLoss>0?'red':'green')}
+}
+async function refreshUniFi(){
+  try{const st=await fetch(statusUrl,{cache:'no-store'}).then(r=>r.json()); lastStatus=st; updateUniFi(st.ubnt)}catch(e){console.warn('UniFi 状态加载失败', e)}
+}
+function fillAdvancedForm(cfg){
+  if(!cfg) return;
+  document.getElementById('advRefreshSeconds').value=cfg.refreshSeconds??'';
+  document.getElementById('advHttpTimeout').value=cfg.thresholds?.httpTimeoutSec??'';
+  document.getElementById('advSurgeEnabled').value=String(!!cfg.surge?.enabled);
+  document.getElementById('advSurgeBase').value=cfg.surge?.baseUrl??'';
+  document.getElementById('advSurgeMaxEvents').value=cfg.surge?.maxEvents??'';
+  document.getElementById('advUbntEnabled').value=String(!!cfg.ubnt?.enabled);
+  document.getElementById('advUbntBase').value=cfg.ubnt?.baseUrl??'';
+  document.getElementById('advUbntSite').value=cfg.ubnt?.site??'';
+  document.getElementById('advDiskWarn').value=cfg.thresholds?.diskFreeGbWarn??'';
+  document.getElementById('advDiskCritical').value=cfg.thresholds?.diskFreeGbCritical??'';
+}
+async function adminLogin(){
+  const password=document.getElementById('advancedPassword').value;
+  const msg=document.getElementById('advancedMsg');
+  const res=await fetch('/api/admin/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password})}).then(r=>r.json());
+  if(!res.ok){alert('密码错误');return}
+  adminToken=res.token;
+  document.getElementById('advancedPanel').style.display='block';
+  document.getElementById('advancedLogin').style.display='none';
+  await loadAdminConfig();
+  if(msg) msg.textContent='高级设置已解锁。';
+}
+async function loadAdminConfig(){
+  const res=await fetch('/api/admin/config',{headers:{'X-Dashboard-Token':adminToken}}).then(r=>r.json());
+  if(!res.ok){throw new Error(res.error||'读取配置失败')}
+  fillAdvancedForm(res.config);
+  return res.config;
+}
+function advancedPatchFromForm(){
+  return {
+    refreshSeconds:Number(document.getElementById('advRefreshSeconds').value),
+    surge:{
+      enabled:document.getElementById('advSurgeEnabled').value==='true',
+      baseUrl:document.getElementById('advSurgeBase').value,
+      maxEvents:Number(document.getElementById('advSurgeMaxEvents').value)
+    },
+    ubnt:{
+      enabled:document.getElementById('advUbntEnabled').value==='true',
+      baseUrl:document.getElementById('advUbntBase').value,
+      site:document.getElementById('advUbntSite').value
+    },
+    thresholds:{
+      diskFreeGbWarn:Number(document.getElementById('advDiskWarn').value),
+      diskFreeGbCritical:Number(document.getElementById('advDiskCritical').value),
+      httpTimeoutSec:Number(document.getElementById('advHttpTimeout').value)
+    }
+  };
+}
+async function saveAdminConfig(){
+  const msg=document.getElementById('advancedMsg');
+  const res=await fetch('/api/admin/config',{method:'POST',headers:{'Content-Type':'application/json','X-Dashboard-Token':adminToken},body:JSON.stringify({config:advancedPatchFromForm()})}).then(r=>r.json());
+  if(!res.ok){msg.textContent='保存失败：'+(res.error||'unknown');return}
+  fillAdvancedForm(res.config);
+  await loadSettingsData(); updateSettingsPanel();
+  msg.textContent='已保存。后端采集循环可能需要等待下次采集或重启脚本后生效。';
+}
+async function loadSettingsData(){
+  try{lastConfig=await fetch('../../config.json',{cache:'no-store'}).then(r=>r.json())}catch(e){lastConfig=null}
+  try{lastStatus=await fetch(statusUrl,{cache:'no-store'}).then(r=>r.json())}catch(e){lastStatus=null}
+}
+function updateSettingsPanel(){
+  const cfg=lastConfig||{}, st=lastStatus||{}, ubnt=st.ubnt||{}, surge=cfg.surge||{}, ubntCfg=cfg.ubnt||{};
+  setText('sPageRefresh','5秒');
+  setText('sBackendRefresh',(cfg.refreshSeconds||'-')+'秒');
+  setText('sSurge',surge.enabled?'已启用':'未启用');
+  setText('sUniFi',ubnt.ok?'已连接':(ubnt.enabled?'异常':'未启用'));
+  setText('sLastUpdate',lastUpdatedAt?new Date(lastUpdatedAt).toLocaleString('zh-CN',{hour12:false}):'-');
+  setText('sUniFiBase',ubntCfg.baseUrl||'-');
+  setText('sUniFiSite',ubnt.site||ubntCfg.site||'-');
+  setText('sGateway',ubnt.wan?.gatewayName||ubnt.controller?.name||'-');
+  setText('sControllerVer',ubnt.controller?.version||'-');
+  setText('sSurgeBase',surge.baseUrl||'-');
+  const th=cfg.thresholds||{}; setText('sDiskWarn',`${th.diskFreeGbWarn??'-'}GB / ${th.diskFreeGbCritical??'-'}GB`);
+}
+async function openSettings(){
+  document.getElementById('settingsOverlay').style.display='flex';
+  await loadSettingsData();
+  updateSettingsPanel();
+}
+function closeSettings(){document.getElementById('settingsOverlay').style.display='none'}
+function applyVisibility(){
+  if(globe && payload){
+    globe.arcsData(showArcs?buildArcs(payload.home,(payload.events||[]).slice(0,30).filter(e=>e.lat!=null&&e.lng!=null)):[]);
+    const home=payload.home, events=(payload.events||[]).slice(0,30).filter(e=>e.lat!=null&&e.lng!=null);
+    const pts=[{...home,size:.45,color:'#f59e0b',label:'Home'},...events.map(e=>({...e,size:.24,color:(e.route||'').includes('Proxy')?'#a855f7':'#22d3ee',label:e.domain}))];
+    globe.pointsData(showPoints?pts:[]);
+  }
+  const atm=globe?.scene?.()?.getObjectByName('blue-atmosphere-glow'); if(atm) atm.visible=showAtmosphere;
+}
+function fmtTime(ts){try{return new Date(ts*1000).toLocaleTimeString('zh-CN',{hour12:false})}catch{return '-'}}
+function selectEvent(e){
+  const selected=document.getElementById('selected');
+  if(selected){
+    selected.innerHTML=`<b>${e.domain}</b>
+  <div class="kv"><span>DNS/IP</span><strong>${e.resolved_ip}</strong></div>
+  <div class="kv"><span>位置</span><strong>${e.city}, ${e.country}</strong></div>
+  <div class="kv"><span>协议</span><strong>${e.protocol}</strong></div>
+  <div class="kv"><span>延迟</span><strong>${e.latency_ms} ms</strong></div>
+  <div class="kv"><span>路径</span><strong>${e.route}</strong></div>`;
+  }
+  if(globe) globe.pointOfView({lat:e.lat,lng:e.lng,altitude:1.7}, 1200);
+}
+function buildArcs(home, events){
+  return events.map(e=>({startLat:home.lat,startLng:home.lng,endLat:e.lat,endLng:e.lng,color:e.route.includes('Proxy')?['#22d3ee','#a855f7']:['#10b981','#22d3ee'],label:e.domain,event:e}));
+}
+let rotateTimer, reloadTimer;
+function render(payload){
+  const home=payload.home, events=payload.events||[];
+  lastUpdatedAt=payload.updatedAt; updateRelativeTime();
+  document.getElementById('kEvents').textContent=events.length;
+  document.getElementById('kCountries').textContent=new Set(events.map(e=>e.country)).size;
+  const avg = events.length ? Math.round(events.reduce((a,b)=>a+(b.latency_ms||0),0)/events.length) : 0;
+  const latencyEl=document.getElementById('kLatency');
+  latencyEl.textContent=avg+'ms';
+  latencyEl.className='v '+(avg>200?'red':avg>100?'yellow':'green');
+  document.getElementById('kProxy').textContent=events.filter(e=>/Proxy|CDN|专线/i.test(e.route||'')).length;
+  refreshUniFi();
+  const eventBox=document.getElementById('events'); eventBox.innerHTML='';
+  const visibleEvents=filteredEvents(events).slice(0,20);
+  visibleEvents.forEach(e=>{const div=document.createElement('div');div.className='event';div.innerHTML=`<div><b>${protocolIcon(e)} ${e.domain}</b><div class="meta">${e.resolved_ip} · ${e.city}, ${e.country} · ${e.latency_ms??'-'}ms · ${fmtTime(e.timestamp)}</div></div><div class="pill">${e.protocol}</div>`;div.onclick=()=>selectEvent(e);eventBox.appendChild(div)});
+  eventBox.scrollTop=0;
+  const drawEvents = events.slice(0,30).filter(e=>e.lat!=null && e.lng!=null);
+  const arcs=buildArcs(home, drawEvents);
+  const points=[{...home,size:.45,color:'#f59e0b',label:'Home'},...drawEvents.map(e=>({...e,size:.24,color:(e.route||'').includes('Proxy')?'#a855f7':'#22d3ee',label:e.domain}))];
+  if(!globe){
+    globe=Globe()(document.getElementById('globe'))
+      .globeMaterial(earthMaterial)
+      .backgroundImageUrl('//unpkg.com/three-globe/example/img/night-sky.png')
+      .arcColor('color').arcDashLength(.45).arcDashGap(1.8).arcDashAnimateTime(2200).arcStroke(0.75).arcAltitudeAutoScale(.45)
+      .onArcHover((arc)=>{
+        const tip=document.getElementById('arcTooltip');
+        if(!arc){tip.style.display='none';window.onmousemove=null;return;}
+        const e=arc.event||{};
+        tip.innerHTML=`<b>${e.domain||'-'}</b><div class="muted">${e.resolved_ip||'-'} | ${e.city||'-'}, ${e.country||'-'} | ${e.latency_ms??'-'}ms | ${e.protocol||'-'}</div>`;
+        tip.style.display='block';
+        window.onmousemove=(ev)=>{tip.style.left=Math.min(window.innerWidth-400, ev.clientX+16)+'px';tip.style.top=Math.min(window.innerHeight-120, ev.clientY+16)+'px'};
+      })
+      .pointLat('lat').pointLng(d=>d.lng||d.lon).pointColor('color').pointAltitude(.025).pointRadius('size')
+      // 地球表面文字默认隐藏：保留 points / IP / domain 数据，仅不渲染白色标签
+      // .labelLat('lat').labelLng(d=>d.lng||d.lon).labelText('label').labelSize(.9).labelDotRadius(.35).labelColor(()=> '#dff9ff')
+      .onArcClick(a=>selectEvent(a.event));
+    globe.pointOfView({lat:home.lat,lng:home.lng,altitude:2.15}, 800);
+    const globeRadius = typeof globe.getGlobeRadius === 'function' ? globe.getGlobeRadius() : 100;
+    // 必加：大气层发光效果（Globe.gl 内部半径约为 100，按 1.02 等比叠加）
+    const atmosphereGeometry = new THREE.SphereGeometry(globeRadius * 1.02, 64, 64);
+    const atmosphereMaterial = new THREE.ShaderMaterial({
+      vertexShader: `
+        varying vec3 vNormal;
+        void main() {
+          vNormal = normalize(normalMatrix * normal);
+          gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+        }
+      `,
+      fragmentShader: `
+        varying vec3 vNormal;
+        void main() {
+          float intensity = pow(0.7 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.0);
+          gl_FragColor = vec4(0.3, 0.6, 1.0, 1.0) * intensity;
+        }
+      `,
+      blending: THREE.AdditiveBlending,
+      side: THREE.BackSide,
+      transparent: true
+    });
+    const atmosphere = new THREE.Mesh(atmosphereGeometry, atmosphereMaterial);
+    atmosphere.name = 'blue-atmosphere-glow';
+    atmosphere.renderOrder = -1;
+    if (globe.scene && !globe.scene().getObjectByName('blue-atmosphere-glow')) {
+      globe.scene().add(atmosphere);
+      window.__globeAtmosphereReady = true;
+      window.__globeAtmosphereRadius = globeRadius * 1.02;
+    }
+    document.getElementById('loading').style.display='none';
+  }
+  // 地球表面文字默认隐藏：不删除 points 数据，也不影响飞线 arcs
+  // globe.labelsData(points);
+  globe.arcsData(arcs).pointsData(points).labelsData([]);
+  if(drawEvents.length) selectEvent(drawEvents[0]);
+  if(rotateTimer) clearInterval(rotateTimer);
+  rotateTimer=setInterval(()=>{ if(!drawEvents.length) return; idx=(idx+1)%drawEvents.length; selectEvent(drawEvents[idx]); }, 5200);
+}
+async function refresh(){
+  payload=await (await fetch(dataUrl+'?t='+Date.now())).json();
+  render(payload);
+}
+async function boot(){
+  document.querySelectorAll('.filterBtn').forEach(btn=>btn.onclick=()=>{activeFilter=btn.dataset.filter;document.querySelectorAll('.filterBtn').forEach(b=>b.classList.toggle('active', b===btn)); if(payload) render(payload);});
+  document.querySelectorAll('.pageLink').forEach(a=>a.onclick=e=>{e.preventDefault();smoothGo(a.href)});
+  document.getElementById('refreshBtn').onclick=()=>refresh().catch(()=>{});
+  document.getElementById('settingsBtn').onclick=openSettings;
+  document.getElementById('shotBtn').onclick=()=>alert('截图请使用系统截图或浏览器截图功能');
+  document.getElementById('settingsClose').onclick=closeSettings;
+  document.getElementById('settingsOverlay').onclick=(e)=>{if(e.target.id==='settingsOverlay') closeSettings()};
+  document.getElementById('sRefreshNow').onclick=async()=>{await refresh(); await refreshUniFi(); await loadSettingsData(); updateSettingsPanel();};
+  document.getElementById('sPauseRefresh').onclick=(e)=>{autoRefreshEnabled=!autoRefreshEnabled;e.target.textContent='自动刷新：'+(autoRefreshEnabled?'开':'关');e.target.classList.toggle('active',autoRefreshEnabled)};
+  document.getElementById('sToggleArcs').onclick=(e)=>{showArcs=!showArcs;e.target.textContent='飞线：'+(showArcs?'开':'关');e.target.classList.toggle('active',showArcs);applyVisibility()};
+  document.getElementById('sTogglePoints').onclick=(e)=>{showPoints=!showPoints;e.target.textContent='点位：'+(showPoints?'开':'关');e.target.classList.toggle('active',showPoints);applyVisibility()};
+  document.getElementById('sToggleAtmosphere').onclick=(e)=>{showAtmosphere=!showAtmosphere;e.target.textContent='大气层：'+(showAtmosphere?'开':'关');e.target.classList.toggle('active',showAtmosphere);applyVisibility()};
+  document.getElementById('advancedLoginBtn').onclick=()=>adminLogin().catch(e=>alert('高级设置解锁失败：'+e.message));
+  document.getElementById('advancedSaveBtn').onclick=()=>saveAdminConfig().catch(e=>{document.getElementById('advancedMsg').textContent='保存失败：'+e.message});
+  document.getElementById('advancedReloadBtn').onclick=()=>loadAdminConfig().catch(e=>{document.getElementById('advancedMsg').textContent='读取失败：'+e.message});
+  await loadSettingsData();
+  await refresh();
+  setInterval(updateRelativeTime, 1000);
+  reloadTimer=setInterval(()=>{if(autoRefreshEnabled) refresh().catch(()=>{})}, 5000);
+}
+boot().catch(e=>{document.getElementById('loading').textContent='地球加载失败：'+e.message});
+</script>
+</body>
+</html>

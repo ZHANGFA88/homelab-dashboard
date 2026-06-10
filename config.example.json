@@ -1,0 +1,62 @@
+{
+  "title": "HomeLab 监控大屏",
+  "refreshSeconds": 30,
+  "services": {
+    "moviepilot": {
+      "name": "MoviePilot",
+      "url": "http://host.docker.internal:3000",
+      "container": "moviepilot-v2"
+    },
+    "emby": {
+      "name": "Emby",
+      "url": "http://host.docker.internal:8096",
+      "container": "emby-server"
+    },
+    "qbittorrent": {
+      "name": "qBittorrent",
+      "url": "http://host.docker.internal:8080",
+      "container": "qbittorrent"
+    },
+    "bytemuse": {
+      "name": "ByteMuse",
+      "url": "http://host.docker.internal:3750",
+      "container": "byte-muse"
+    },
+    "openclaw": {
+      "name": "OpenClaw",
+      "url": "http://host.docker.internal:18789",
+      "container": null
+    }
+  },
+  "paths": {
+    "media": "/media",
+    "openclaw": "/openclaw"
+  },
+  "surge": {
+    "enabled": false,
+    "baseUrl": "http://host.docker.internal:9091",
+    "tokenEnv": "SURGE_API_TOKEN",
+    "maxEvents": 80
+  },
+  "ubnt": {
+    "enabled": false,
+    "baseUrl": "https://192.168.1.1",
+    "site": "default",
+    "usernameEnv": "UBNT_USERNAME",
+    "passwordEnv": "UBNT_PASSWORD"
+  },
+  "thresholds": {
+    "diskFreeGbWarn": 40,
+    "diskFreeGbCritical": 20,
+    "httpTimeoutSec": 4
+  },
+  "globe": {
+    "home": {
+      "name": "Home",
+      "city": "Shanghai",
+      "country": "China",
+      "lat": 31.2304,
+      "lng": 121.4737
+    }
+  }
+}

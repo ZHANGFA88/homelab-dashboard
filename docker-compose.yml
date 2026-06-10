@@ -1,0 +1,31 @@
+services:
+  homelab-dashboard:
+    build: .
+    image: homelab-dashboard:latest
+    container_name: homelab-dashboard
+    restart: unless-stopped
+    ports:
+      - "${DASHBOARD_PORT:-8765}:8765"
+    environment:
+      CONFIG_PATH: /config/config.json
+      DASHBOARD_PORT: 8765
+      DASHBOARD_HOST: 0.0.0.0
+      DASHBOARD_ADMIN_PASSWORD: ${DASHBOARD_ADMIN_PASSWORD:-change-me-please}
+      STATUS_INTERVAL: ${STATUS_INTERVAL:-30}
+      SURGE_INTERVAL: ${SURGE_INTERVAL:-5}
+      SURGE_API_TOKEN: ${SURGE_API_TOKEN:-}
+      UBNT_USERNAME: ${UBNT_USERNAME:-}
+      UBNT_PASSWORD: ${UBNT_PASSWORD:-}
+    volumes:
+      # Runtime config. Copy config.example.json to ./config/config.json and edit it.
+      - ./config:/config
+      # Persistent generated data: status.json, network_events.json, GeoIP cache, history.
+      - ./data:/app/data
+      # Optional: mount your media library for Emby poster wall.
+      # Change left side to your real media path.
+      - ${MEDIA_PATH:-./media}:/media:ro
+      # Optional: enable Docker container status checks on Linux/macOS Docker Desktop.
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    extra_hosts:
+      # Linux users need this to reach host services by host.docker.internal.
+      - "host.docker.internal:host-gateway"

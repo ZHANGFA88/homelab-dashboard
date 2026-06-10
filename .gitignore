@@ -1,0 +1,45 @@
+# Secrets / local runtime config
+config.json
+.env
+config/*.json
+!config/.gitkeep
+
+# Generated data/cache/history
+data/*.json
+data/*.jsonl
+data/*.tmp
+data/*cache*
+
+# Local media mount placeholder
+media/
+
+# Backups created during iterative editing
+*.bak
+*.bak-*
+*.backup
+*.before-*
+*.stage*-bak-*
+*.advanced-settings-bak-*
+*.emby-poster-wall-bak-*
+*.nav-transition-earth-bg-bak-*
+*.bottom-scroll-bak-*
+*.topology-scroll-bak-*
+public/**/*.bak-*
+public/**/*-bak-*
+scripts/**/*-bak-*
+
+# Logs / temp
+*.log
+.DS_Store
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Local screenshots / test artifacts
+/tmp/
+playwright-report/
+test-results/
+
+# Unused experimental globe textures
+public/globe/assets/
+public/globe/skyblue-earth-A.jpg
