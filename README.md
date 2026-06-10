@@ -11,14 +11,20 @@
 
 ---
 
-## 功能截图
 
-你可以在 GitHub README 里后续自行补充截图：
+## 效果预览
 
-```md
-![main](docs/main.png)
-![globe](docs/globe.png)
-```
+### 主面板
+
+![HomeLab Dashboard](docs/images/main-dashboard.png)
+
+### 3D 网络地球
+
+![Network Globe](docs/images/network-globe.png)
+
+### 设置面板
+
+![Settings](docs/images/main-settings.png)
 
 ---
 
