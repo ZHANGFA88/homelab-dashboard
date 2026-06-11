@@ -43,3 +43,8 @@ test-results/
 # Unused experimental globe textures
 public/globe/assets/
 public/globe/skyblue-earth-A.jpg
+
+# Added by dashboard hardening
+config.json.*bak*
+*-bak-*
+logs/

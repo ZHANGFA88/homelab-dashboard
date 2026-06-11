@@ -4,6 +4,18 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 BASE = Path(__file__).resolve().parents[1]
+
+def load_env_file(path):
+    try:
+        for line in Path(path).read_text().splitlines():
+            line=line.strip()
+            if not line or line.startswith('#') or '=' not in line: continue
+            k,v=line.split('=',1)
+            os.environ.setdefault(k.strip(), v.strip().strip('\"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+load_env_file(BASE / '.env')
 CONFIG_PATH = Path(os.environ.get('CONFIG_PATH', BASE / 'config.json'))
 DATA = BASE / 'data'
 DATA.mkdir(exist_ok=True)

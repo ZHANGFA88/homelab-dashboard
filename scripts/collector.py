@@ -4,6 +4,19 @@ from pathlib import Path
 from datetime import datetime, timezone, timedelta
 
 BASE = Path(__file__).resolve().parents[1]
+
+def load_env_file(path):
+    try:
+        for line in Path(path).read_text().splitlines():
+            line=line.strip()
+            if not line or line.startswith('#') or '=' not in line:
+                continue
+            k,v=line.split('=',1)
+            os.environ.setdefault(k.strip(), v.strip().strip('\"').strip("'"))
+    except FileNotFoundError:
+        pass
+
+load_env_file(BASE / '.env')
 CONFIG_PATH = Path(os.environ.get('CONFIG_PATH', BASE / 'config.json'))
 CONFIG = json.loads(CONFIG_PATH.read_text())
 DATA = BASE / 'data'
@@ -62,6 +75,38 @@ def disk_info(path='/'):
         return {'path': path, 'totalGb': round(u.total/1024**3,1), 'usedGb': round(u.used/1024**3,1), 'freeGb': round(u.free/1024**3,1), 'usedPct': round(u.used/u.total*100,1)}
     except Exception as e:
         return {'path': path, 'error': str(e)}
+
+
+def dir_usage(path, timeout=8):
+    path=os.path.expanduser(path)
+    if not os.path.exists(path):
+        return {'path': path, 'exists': False}
+    r=run(['du','-sk',path], timeout=timeout)
+    if not r['ok']:
+        return {'path': path, 'exists': True, 'ok': False, 'error': (r.get('out') or 'timeout')[:160]}
+    try:
+        kb=int((r['out'].split() or ['0'])[0])
+        return {'path': path, 'exists': True, 'ok': True, 'gb': round(kb/1024/1024,2)}
+    except Exception as e:
+        return {'path': path, 'exists': True, 'ok': False, 'error': str(e)}
+
+def disk_usage_details():
+    candidates=[
+        ('OpenClaw 工作区', str(BASE)),
+        ('大屏日志', str(BASE/'logs')),
+        ('大屏数据', str(BASE/'data')),
+        ('临时目录', '/tmp'),
+        ('Docker 容器数据', os.path.expanduser('~/Library/Containers/com.docker.docker')),
+        ('用户缓存', os.path.expanduser('~/Library/Caches')),
+        ('下载目录', os.path.expanduser('~/Downloads')),
+    ]
+    items=[]
+    for name,path in candidates:
+        d=dir_usage(path, timeout=8)
+        d['name']=name
+        items.append(d)
+    items.sort(key=lambda x: x.get('gb') or 0, reverse=True)
+    return {'items': items[:8]}
 
 def path_check(path):
     # Run path probing in a separate Python process with timeout.
@@ -217,7 +262,7 @@ def recommendations(report):
     free=disk.get('freeGb')
     th=CONFIG['thresholds']
     if isinstance(free,(int,float)) and free < th['diskFreeGbWarn']:
-        rec.append({'level':'warn','tag':'存储','text':f'磁盘剩余 {free}GB，建议清理旧备份/日志'})
+        rec.append({'level':'warn','tag':'存储','text':f'磁盘剩余 {free}GB，建议查看占用明细并清理缓存/旧下载'})
     mp=report.get('moviepilotLogs',{})
     cc=mp.get('cookieCloud') or {}
     if cc.get('failed',0)>0:
@@ -243,6 +288,7 @@ def collect():
         item['container']=docker_container(cfg.get('container')) if cfg.get('container') else {'configured': False}
         report['services'][key]=item
     report['disk']=disk_info('/')
+    report['diskUsage']=disk_usage_details()
     report['paths']={k:path_check(v) for k,v in CONFIG.get('paths',{}).items()}
     report['moviepilotLogs']=mp_log_summary()
     report['surge']=surge_placeholder()

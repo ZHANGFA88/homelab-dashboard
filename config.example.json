@@ -15,7 +15,7 @@
     "qbittorrent": {
       "name": "qBittorrent",
       "url": "http://host.docker.internal:8080",
-      "container": "qbittorrent"
+      "container": null
     },
     "bytemuse": {
       "name": "ByteMuse",
@@ -24,13 +24,12 @@
     },
     "openclaw": {
       "name": "OpenClaw",
-      "url": "http://host.docker.internal:18789",
+      "url": "http://127.0.0.1:18789",
       "container": null
     }
   },
   "paths": {
-    "media": "/media",
-    "openclaw": "/openclaw"
+    "media": "/media"
   },
   "surge": {
     "enabled": false,
@@ -44,6 +43,11 @@
     "site": "default",
     "usernameEnv": "UBNT_USERNAME",
     "passwordEnv": "UBNT_PASSWORD"
+  },
+  "emby": {
+    "enabled": false,
+    "internalUrl": "http://host.docker.internal:8096",
+    "publicUrl": "http://localhost:8096"
   },
   "thresholds": {
     "diskFreeGbWarn": 40,

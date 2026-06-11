@@ -6,6 +6,10 @@
 - 3D 网络地球：Surge 访问飞线、UniFi 网络状态、筛选、设置面板、高级设置
 - Docker 一键运行
 - 配置与敏感信息外置，不需要把密码提交到 GitHub
+- Emby 最近入库 API 集成、海报代理、成人内容过滤、分类过滤
+- 服务卡片可点击跳转，并对异常/仅本机服务给出提示
+- macOS LaunchAgent 常驻运行脚本与日志轮转
+- 数据更新时间自检，采集停止时自动变色提醒
 
 > 默认访问地址：`http://127.0.0.1:8765/public/index.html`
 
@@ -170,27 +174,44 @@ UBNT_PASSWORD=xxx
 
 ### Emby 最近入库海报墙
 
-海报墙不直接调用 Emby API，而是扫描媒体库里的图片：
+推荐使用后端 Emby API 集成。浏览器只访问本项目的代理接口，Emby Token 不会暴露到前端：
 
-- `poster.jpg`
-- `poster.png`
-- `folder.jpg`
-- `cover.jpg`
+```json
+"emby": {
+  "enabled": true,
+  "internalUrl": "http://host.docker.internal:8096",
+  "publicUrl": "http://localhost:8096"
+}
+```
 
-Docker 运行时挂载：
+`.env` 中配置：
+
+```bash
+EMBY_API_KEY=your-emby-token
+EMBY_USER_ID=your-emby-user-id
+```
+
+功能：
+
+- 最近入库自动补足显示数量
+- 跳过无主海报 / 0 字节海报
+- 成人内容默认隐藏
+- 支持全部 / 电影 / 剧集过滤
+- 点击海报跳转 Emby 详情页
+
+如果未配置 Emby API，会回退到本地媒体库图片扫描：
 
 ```bash
 MEDIA_PATH=/your/media/path
 ```
 
-页面会通过本地 API：
+页面接口：
 
 ```text
 /api/emby/recent
+/api/emby/image/{item_id}
 /api/media/poster
 ```
-
-安全地加载海报，不暴露主机路径。
 
 ---
 
@@ -212,6 +233,41 @@ http://127.0.0.1:8765/public/index.html
 ```
 
 ---
+
+## macOS LaunchAgent 常驻运行
+
+本地非 Docker 运行时，可使用用户级 LaunchAgent 托管 Web 与采集器：
+
+```bash
+bash scripts/dashboard_service.sh start
+bash scripts/dashboard_service.sh status
+bash scripts/dashboard_service.sh restart
+bash scripts/dashboard_service.sh logs
+```
+
+包含：
+
+- `com.lvxin.health-dashboard`：Web 服务
+- `com.lvxin.health-dashboard.status`：主状态采集
+- `com.lvxin.health-dashboard.surge`：Surge 访问事件采集
+- `com.lvxin.health-dashboard.logrotate`：日志轮转
+
+日志默认位于：
+
+```text
+logs/
+```
+
+---
+
+## 安全策略
+
+- `.env` 存放 Token / 密码，不提交 GitHub
+- `config.json` 为本地运行配置，不提交 GitHub
+- `config.example.json` 只放占位符和示例地址
+- 截图使用脱敏演示数据，不包含真实媒体名、密码、Token 或代理信息
+- Emby 图片由后端代理，浏览器不接触 `X-Emby-Token`
+- 成人内容过滤在后端执行，前端只展示已过滤结果
 
 ## 上传 GitHub 前必须确认
 
