@@ -1,32 +1,59 @@
 # HomeLab Dashboard
 
-一个适合家庭服务器 / HomeLab 使用的监控大屏，包含：
-
-- 主面板：服务健康、UniFi/UBNT 拓扑、Emby 最近入库海报墙、Surge 访问统计、每日建议
-- 3D 网络地球：Surge 访问飞线、UniFi 网络状态、筛选、设置面板、高级设置
-- Docker 一键运行
-- 配置与敏感信息外置，不需要把密码提交到 GitHub
-- Emby 最近入库 API 集成、海报代理、成人内容过滤、分类过滤
-- 服务卡片可点击跳转，并对异常/仅本机服务给出提示
-- macOS LaunchAgent 常驻运行脚本与日志轮转
-- 数据更新时间自检，采集停止时自动变色提醒
+HomeLab Dashboard 是一个面向家庭服务器 / Mac mini / NAS 场景的本地监控大屏。它把服务健康、网络状态、媒体库最近入库、访问流量和每日建议集中在一个页面里，适合挂在电视、平板或浏览器常驻显示。
 
 > 默认访问地址：`http://127.0.0.1:8765/public/index.html`
 
 ---
 
-
-## 效果预览
+## 软件介绍
 
 ### 主面板
 
-![HomeLab Dashboard](docs/images/main-dashboard.png)
+- **服务健康**：检查 HTTP 可用性和 Docker 容器状态，服务卡片支持点击跳转。
+- **异常提示**：异常服务点击时显示原因；仅本机服务不会误跳转。
+- **Emby 最近入库**：通过后端 Emby API 获取最近入库内容，支持海报代理和详情页跳转。
+- **媒体过滤**：自动跳过无主海报、空图片，并在后端默认隐藏成人内容。
+- **分类切换**：Emby 最近入库支持 `全部 / 电影 / 剧集`，并可切换显示数量和海报大小。
+- **UniFi / UBNT 拓扑**：展示 WAN、AP、客户端数量和客户端流量排行。
+- **Surge 访问数据**：展示最近访问事件、代理 / 直连 / 国外访问统计。
+- **每日建议**：根据服务、磁盘、日志和网络状态生成可操作建议。
+- **数据新鲜度**：顶部显示状态更新时间，采集超时会自动变色提醒。
 
 ### 3D 网络地球
 
+- 基于 Surge 访问事件展示网络访问分布。
+- 支持网络状态、访问来源、延迟和最近事件展示。
+- 使用脱敏后的本地数据源，不需要把代理 Token 暴露给浏览器。
+
+### 设置与安全
+
+- 高级设置需要管理密码。
+- 只允许修改安全白名单字段。
+- Token、密码、Emby Key、UniFi 密码均通过 `.env` / 环境变量加载。
+- Emby 图片通过后端代理，浏览器不会接触 `X-Emby-Token`。
+- `config.json`、`.env`、运行数据、日志和备份文件默认不会提交到 GitHub。
+
+### 本地常驻运行
+
+- 支持 macOS LaunchAgent 托管 Web 服务、状态采集器、Surge 采集器和日志轮转。
+- 提供 `scripts/dashboard_service.sh` 一键管理脚本。
+
+---
+
+## 效果预览
+
+> 以下截图均使用脱敏演示数据生成，不包含真实媒体名、真实代理数据、密码、Token 或家庭网络敏感信息。
+
+### 主面板：服务健康、Emby 最近入库、UniFi、Surge、每日建议
+
+![HomeLab Dashboard](docs/images/main-dashboard.png)
+
+### 3D 网络地球：访问分布与网络事件
+
 ![Network Globe](docs/images/network-globe.png)
 
-### 设置面板
+### 设置面板：数据源状态与安全白名单配置
 
 ![Settings](docs/images/main-settings.png)
 
@@ -96,6 +123,8 @@ http://127.0.0.1:8765/public/globe/index.html
 | `DASHBOARD_ADMIN_PASSWORD` | 高级设置密码 | `change-me-please` |
 | `STATUS_INTERVAL` | 主状态采集间隔秒数 | `30` |
 | `SURGE_INTERVAL` | Surge 请求采集间隔秒数 | `5` |
+| `EMBY_API_KEY` | Emby API Token，用于最近入库 API | 空 |
+| `EMBY_USER_ID` | Emby 用户 ID；留空时后端尝试自动获取第一个用户 | 空 |
 | `SURGE_API_TOKEN` | Surge External Controller Token | 空 |
 | `UBNT_USERNAME` | UniFi 用户名 | 空 |
 | `UBNT_PASSWORD` | UniFi 密码 | 空 |
@@ -218,12 +247,16 @@ MEDIA_PATH=/your/media/path
 ## 本地非 Docker 运行
 
 ```bash
+cp .env.example .env
 cp config.example.json config.json
-export DASHBOARD_ADMIN_PASSWORD='your-password'
-export SURGE_API_TOKEN='your-surge-token'
-export UBNT_USERNAME='your-unifi-username'
-export UBNT_PASSWORD='your-unifi-password'
+# 编辑 .env 和 config.json 后启动
 bash scripts/start_dashboard.sh
+```
+
+`start_dashboard.sh` 默认不会自动打开浏览器。如需启动后自动打开：
+
+```bash
+DASHBOARD_OPEN_BROWSER=1 bash scripts/start_dashboard.sh
 ```
 
 访问：
@@ -299,22 +332,6 @@ data/*.json
 
 ---
 
-## 发布到 GitHub
-
-```bash
-git init
-git add .
-git status --short
-git commit -m "Initial HomeLab Dashboard"
-git branch -M main
-git remote add origin https://github.com/<your-name>/homelab-dashboard.git
-git push -u origin main
-```
-
-如果你想让朋友直接拉镜像使用，可以后续配置 GitHub Actions 自动构建 Docker 镜像到 GHCR。
-
-
----
 
 ## 可选：发布 Docker 镜像到 GHCR
 
@@ -350,6 +367,7 @@ services:
 ```
 
 如果暂时不想公开镜像，也可以只发 GitHub 源码，让朋友 `docker compose up -d --build`。
+
 ---
 
 ## 安全提示
@@ -397,7 +415,15 @@ extra_hosts:
 
 ### Emby 海报墙为空？
 
-检查：
+优先检查 Emby API：
+
+1. `.env` 是否配置 `EMBY_API_KEY`
+2. `config/config.json` 里的 `emby.enabled` 是否为 `true`
+3. `emby.internalUrl` 是否能被后端访问
+4. 目标条目是否有 Primary 主海报
+5. 内容是否被成人过滤规则隐藏
+
+如果未配置 Emby API，会回退到本地媒体库图片扫描，再检查：
 
 1. `.env` 里的 `MEDIA_PATH` 是否正确
 2. 媒体库里是否有 `poster.jpg` / `folder.jpg` / `cover.jpg`
